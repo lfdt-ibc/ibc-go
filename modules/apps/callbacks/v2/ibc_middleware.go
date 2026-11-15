@@ -11,13 +11,13 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-go/v11/modules/apps/callbacks/internal"
-	"github.com/cosmos/ibc-go/v11/modules/apps/callbacks/types"
-	clienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
-	channeltypesv2 "github.com/cosmos/ibc-go/v11/modules/core/04-channel/v2/types"
-	"github.com/cosmos/ibc-go/v11/modules/core/api"
-	"github.com/cosmos/ibc-go/v11/modules/core/exported"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/callbacks/internal"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/callbacks/types"
+	clienttypes "github.com/lfdt-ibc/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/types"
+	channeltypesv2 "github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/v2/types"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/core/api"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/core/exported"
 )
 
 var (
@@ -392,7 +392,7 @@ func (im *IBCMiddleware) WriteAcknowledgement(
 
 	// NOTE: use first payload as the payload that is being handled by callbacks middleware
 	// must reconsider if multipacket data gets supported with async packets
-	// TRACKING ISSUE: https://github.com/cosmos/ibc-go/issues/7950
+	// TRACKING ISSUE: https://github.com/lfdt-ibc/ibc-go/issues/7950
 	if len(packet.Payloads) != 1 {
 		return errorsmod.Wrapf(channeltypesv2.ErrInvalidAcknowledgement, "async packet has multiple payloads")
 	}
@@ -417,6 +417,10 @@ func (im *IBCMiddleware) WriteAcknowledgement(
 		return err
 	}
 
+	recvResult := channeltypesv2.RecvPacketResult{
+		Status:          channeltypesv2.PacketStatus_Success,
+		Acknowledgement: ack.AppAcknowledgements[0],
+	}
 	callbackExecutor := func(cachedCtx sdk.Context) error {
 		// reconstruct a channel v1 packet from the v2 packet
 		// in order to preserve the same interface for the contract keeper
@@ -430,12 +434,15 @@ func (im *IBCMiddleware) WriteAcknowledgement(
 			TimeoutHeight:      clienttypes.Height{},
 			TimeoutTimestamp:   0,
 		}
-		// The contract must observe the same acknowledgement representation regardless
-		// of whether the acknowledgement was written synchronously in OnRecvPacket or
-		// asynchronously here: the raw application acknowledgement bytes.
-		recvAck := RecvAcknowledgement(ack.AppAcknowledgements[0])
+		// wrap the individual acknowledgement into the channeltypesv2.Acknowledgement since it implements the exported.Acknowledgement interface
+		var ack channeltypesv2.Acknowledgement
+		if recvResult.Status == channeltypesv2.PacketStatus_Failure {
+			ack = channeltypesv2.NewAcknowledgement(channeltypesv2.ErrorAcknowledgement[:])
+		} else {
+			ack = channeltypesv2.NewAcknowledgement(recvResult.Acknowledgement)
+		}
 		return im.contractKeeper.IBCReceivePacketCallback(
-			cachedCtx, packetv1, recvAck, cbData.CallbackAddress, payload.Version,
+			cachedCtx, packetv1, ack, cbData.CallbackAddress, payload.Version,
 		)
 	}
 

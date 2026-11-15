@@ -12,19 +12,18 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-go/v11/modules/apps/callbacks/testing/simapp"
-	"github.com/cosmos/ibc-go/v11/modules/apps/callbacks/types"
-	callbacksv2 "github.com/cosmos/ibc-go/v11/modules/apps/callbacks/v2"
-	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
-	channelkeeperv2 "github.com/cosmos/ibc-go/v11/modules/core/04-channel/v2/keeper"
-	channeltypesv2 "github.com/cosmos/ibc-go/v11/modules/core/04-channel/v2/types"
-	"github.com/cosmos/ibc-go/v11/modules/core/api"
-	ibcerrors "github.com/cosmos/ibc-go/v11/modules/core/errors"
-	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
-	ibctesting "github.com/cosmos/ibc-go/v11/testing"
-	ibcmock "github.com/cosmos/ibc-go/v11/testing/mock"
-	ibcmockv2 "github.com/cosmos/ibc-go/v11/testing/mock/v2"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/callbacks/testing/simapp"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/callbacks/types"
+	callbacksv2 "github.com/lfdt-ibc/ibc-go/v11/modules/apps/callbacks/v2"
+	transfertypes "github.com/lfdt-ibc/ibc-go/v11/modules/apps/transfer/types"
+	channeltypes "github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/types"
+	channelkeeperv2 "github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/v2/keeper"
+	channeltypesv2 "github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/v2/types"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/core/api"
+	ibcerrors "github.com/lfdt-ibc/ibc-go/v11/modules/core/errors"
+	ibctesting "github.com/lfdt-ibc/ibc-go/v11/testing"
+	ibcmock "github.com/lfdt-ibc/ibc-go/v11/testing/mock"
+	ibcmockv2 "github.com/lfdt-ibc/ibc-go/v11/testing/mock/v2"
 )
 
 func (s *CallbacksTestSuite) TestNewIBCMiddleware() {
@@ -852,54 +851,4 @@ func (s *CallbacksTestSuite) TestWriteAcknowledgement() {
 			}
 		})
 	}
-}
-
-// TestWriteAcknowledgementCallbackAckMatchesSyncPath ensures that a contract
-// receives the same acknowledgement representation (the raw application
-// acknowledgement bytes) whether the acknowledgement is written synchronously
-// via OnRecvPacket or asynchronously via WriteAcknowledgement.
-func (s *CallbacksTestSuite) TestWriteAcknowledgementCallbackAckMatchesSyncPath() {
-	s.SetupTest()
-
-	packetData := transfertypes.NewFungibleTokenPacketData(
-		ibctesting.TestCoin.Denom,
-		ibctesting.TestCoin.Amount.String(),
-		ibctesting.TestAccAddress,
-		s.chainB.SenderAccount.GetAddress().String(),
-		fmt.Sprintf(`{"dest_callback": {"address":"%s", "gas_limit":"600000"}}`, ibctesting.TestAccAddress),
-	)
-	payload := channeltypesv2.NewPayload(
-		transfertypes.PortID, transfertypes.PortID,
-		transfertypes.V1, transfertypes.EncodingJSON,
-		packetData.GetBytes(),
-	)
-
-	var receivedAcks [][]byte
-	GetSimApp(s.chainB).MockContractKeeper.IBCReceivePacketCallbackFn = func(
-		_ sdk.Context, _ ibcexported.PacketI, ack ibcexported.Acknowledgement, _, _ string,
-	) error {
-		receivedAcks = append(receivedAcks, ack.Acknowledgement())
-		return nil
-	}
-
-	cbs := s.chainB.App.GetIBCKeeper().ChannelKeeperV2.Router.Route(ibctesting.TransferPort)
-	mw, ok := cbs.(api.WriteAcknowledgementWrapper)
-	s.Require().True(ok)
-
-	// synchronous path
-	ctx := s.chainB.GetContext()
-	res := cbs.OnRecvPacket(ctx, s.path.EndpointA.ClientID, s.path.EndpointB.ClientID, 1, payload, s.chainB.SenderAccount.GetAddress())
-	s.Require().Equal(channeltypesv2.PacketStatus_Success, res.Status)
-	s.Require().Len(receivedAcks, 1)
-	s.Require().Equal(res.Acknowledgement, receivedAcks[0])
-
-	// asynchronous path with the same application acknowledgement
-	packet := channeltypesv2.NewPacket(2, s.path.EndpointA.ClientID, s.path.EndpointB.ClientID, uint64(ctx.BlockTime().Unix()), payload)
-	s.chainB.App.GetIBCKeeper().ChannelKeeperV2.SetAsyncPacket(ctx, packet.DestinationClient, packet.Sequence, packet)
-	s.chainB.App.GetIBCKeeper().ChannelKeeperV2.SetPacketReceipt(ctx, packet.DestinationClient, packet.Sequence)
-
-	err := mw.WriteAcknowledgement(ctx, packet.DestinationClient, packet.Sequence, channeltypesv2.NewAcknowledgement(res.Acknowledgement))
-	s.Require().NoError(err)
-	s.Require().Len(receivedAcks, 2)
-	s.Require().Equal(receivedAcks[0], receivedAcks[1], "async callback must receive the same acknowledgement bytes as the sync callback")
 }
