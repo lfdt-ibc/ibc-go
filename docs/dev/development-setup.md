@@ -14,6 +14,26 @@ Other helpful commands:
 - `go get -u` to update an existing dependency.
 - `go mod tidy` to update dependencies in `go.sum`.
 
+## Vulnerability scanning
+
+The [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/lfdt-ibc/ibc-go) Vulnerabilities check uses [OSV-Scanner](https://google.github.io/osv-scanner/). To reproduce it locally, scan every manifest in the repository (all `go.mod` files, `requirements.txt` and `docs/package-lock.json`) from the repository root:
+
+```shell
+go run github.com/google/osv-scanner/v2/cmd/osv-scanner@latest scan source -r --no-call-analysis=go .
+```
+
+To check whether ibc-go code actually calls a reported Go vulnerability, enable Go call analysis, which runs [govulncheck](https://go.dev/doc/tutorial/govulncheck) while still applying `osv-scanner.toml`. Add `--all-vulns` to also list vulnerabilities that are not called:
+
+```shell
+go run github.com/google/osv-scanner/v2/cmd/osv-scanner@latest scan source -r --call-analysis=go .
+```
+
+Fix vulnerabilities by bumping the dependency, then run `make tidy-all`. For the docs site, use `npm audit fix --package-lock-only` in `docs/`, or add an entry to `overrides` in `docs/package.json` when a transitive dependency pins a vulnerable version.
+
+A vulnerability with no fix, or one that does not affect ibc-go, can be ignored by adding an `[[IgnoredVulns]]` entry with an `id` and a `reason` to the root `osv-scanner.toml`.
+
+On every pull request, the Dependency Review workflow (`.github/workflows/dependencies-review.yml`) fails when a pull request introduces a dependency with a known vulnerability, except the advisories listed in the root `osv-scanner.toml`. Vulnerabilities already on `main` do not fail pull requests; check them with the scans above.
+
 ## Protobuf
 
 We use [Protocol Buffers](https://developers.google.com/protocol-buffers) along with [buf](https://docs.buf.build/introduction) and [gogoproto](https://github.com/gogo/protobuf) to generate code for use in ibc-go.
@@ -40,7 +60,7 @@ It reads protobuf service definitions and generates a reverse-proxy server which
 - Build the `simd` test chain binary with `make build`.
 - `main` must never fail `make test`.
 - No `--force` onto `main` (except when reverting a broken commit, which should seldom happen).
-- Create a development branch either on `github.com/cosmos/ibc-go`, or your fork (using `git remote add fork`).
+- Create a development branch either on `github.com/lfdt-ibc/ibc-go`, or your fork (using `git remote add fork`).
 - Before submitting a pull request, begin `git rebase` on top of `main`.
 - Ensure you are using the pre-commit hooks by running `make setup-pre-commit`.
 
