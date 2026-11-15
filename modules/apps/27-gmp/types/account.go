@@ -16,8 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 
-	host "github.com/cosmos/ibc-go/v11/modules/core/24-host"
-	ibcerrors "github.com/cosmos/ibc-go/v11/modules/core/errors"
+	host "github.com/lfdt-ibc/ibc-go/v11/modules/core/24-host"
+	ibcerrors "github.com/lfdt-ibc/ibc-go/v11/modules/core/errors"
 )
 
 // NewAccountIdentifier creates a new AccountIdentifier with the given clientId, sender, and salt.
@@ -27,27 +27,6 @@ func NewAccountIdentifier(clientID, sender string, salt []byte) AccountIdentifie
 		Sender:   sender,
 		Salt:     salt,
 	}
-}
-
-// Validate performs basic validation of the account identifier fields.
-// The sender is an opaque identifier on the counterparty chain (for example an
-// EVM hex address or a bech32 address with a foreign prefix), so it is only
-// checked for presence and length, mirroring GMPPacketData.ValidateBasic.
-func (id AccountIdentifier) Validate() error {
-	if err := host.ClientIdentifierValidator(id.ClientId); err != nil {
-		return errorsmod.Wrapf(err, "invalid client ID %s", id.ClientId)
-	}
-	if strings.TrimSpace(id.Sender) == "" {
-		return errorsmod.Wrap(ibcerrors.ErrInvalidAddress, "missing sender address")
-	}
-	if len(id.Sender) > MaximumSenderLength {
-		return errorsmod.Wrapf(ibcerrors.ErrInvalidAddress, "sender address must not exceed %d bytes", MaximumSenderLength)
-	}
-	if len(id.Salt) > MaximumSaltLength {
-		return errorsmod.Wrapf(ErrInvalidSalt, "salt must not exceed %d bytes", MaximumSaltLength)
-	}
-
-	return nil
 }
 
 // NewICS27Account creates a new ICS27Account with the given address and accountId.

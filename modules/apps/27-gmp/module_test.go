@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 	testifysuite "github.com/stretchr/testify/suite"
 
-	gmp "github.com/cosmos/ibc-go/v11/modules/apps/27-gmp"
-	"github.com/cosmos/ibc-go/v11/modules/apps/27-gmp/types"
-	ibctesting "github.com/cosmos/ibc-go/v11/testing"
+	gmp "github.com/lfdt-ibc/ibc-go/v11/modules/apps/27-gmp"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/27-gmp/types"
+	ibctesting "github.com/lfdt-ibc/ibc-go/v11/testing"
 )
 
 type AppModuleTestSuite struct {
@@ -74,14 +74,14 @@ func (s *AppModuleTestSuite) TestValidateGenesis() {
 			true,
 		},
 		{
-			"failure: empty sender address",
+			"failure: invalid sender address",
 			&types.GenesisState{
 				Ics27Accounts: []types.RegisteredICS27Account{
 					{
 						AccountAddress: s.chainA.SenderAccount.GetAddress().String(),
 						AccountId: types.AccountIdentifier{
 							ClientId: ibctesting.FirstClientID,
-							Sender:   "",
+							Sender:   "invalid",
 							Salt:     []byte("salt"),
 						},
 					},

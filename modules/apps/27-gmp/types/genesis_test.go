@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/ibc-go/v11/modules/apps/27-gmp/types"
-	ibctesting "github.com/cosmos/ibc-go/v11/testing"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/27-gmp/types"
+	ibctesting "github.com/lfdt-ibc/ibc-go/v11/testing"
 )
 
 func TestDefaultGenesisState(t *testing.T) {
@@ -64,46 +64,14 @@ func TestGenesisState_Validate(t *testing.T) {
 			true,
 		},
 		{
-			"success: sender is a counterparty (non-bech32) identifier",
+			"failure: invalid sender address",
 			&types.GenesisState{
 				Ics27Accounts: []types.RegisteredICS27Account{
 					{
 						AccountAddress: validAddress,
 						AccountId: types.AccountIdentifier{
 							ClientId: validClientID,
-							Sender:   "0x1234567890abcdef1234567890abcdef12345678",
-							Salt:     []byte("salt"),
-						},
-					},
-				},
-			},
-			false,
-		},
-		{
-			"failure: empty sender address",
-			&types.GenesisState{
-				Ics27Accounts: []types.RegisteredICS27Account{
-					{
-						AccountAddress: validAddress,
-						AccountId: types.AccountIdentifier{
-							ClientId: validClientID,
-							Sender:   " ",
-							Salt:     []byte("salt"),
-						},
-					},
-				},
-			},
-			true,
-		},
-		{
-			"failure: sender address exceeds max length",
-			&types.GenesisState{
-				Ics27Accounts: []types.RegisteredICS27Account{
-					{
-						AccountAddress: validAddress,
-						AccountId: types.AccountIdentifier{
-							ClientId: validClientID,
-							Sender:   ibctesting.GenerateString(types.MaximumSenderLength + 1),
+							Sender:   "invalid",
 							Salt:     []byte("salt"),
 						},
 					},

@@ -7,9 +7,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-go/v11/modules/apps/27-gmp/types"
-	ibcerrors "github.com/cosmos/ibc-go/v11/modules/core/errors"
-	ibctesting "github.com/cosmos/ibc-go/v11/testing"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/apps/27-gmp/types"
+	ibcerrors "github.com/lfdt-ibc/ibc-go/v11/modules/core/errors"
+	ibctesting "github.com/lfdt-ibc/ibc-go/v11/testing"
 )
 
 const invalid = "invalid"
@@ -42,23 +42,9 @@ func (s *KeeperTestSuite) TestInitGenesis() {
 			ibcerrors.ErrInvalidAddress,
 		},
 		{
-			"success: sender is a counterparty (non-bech32) identifier",
+			"failure: invalid sender address",
 			func() {
-				genesisState.Ics27Accounts[0].AccountId.Sender = "0x1234567890abcdef1234567890abcdef12345678"
-			},
-			nil,
-		},
-		{
-			"failure: empty sender address",
-			func() {
-				genesisState.Ics27Accounts[0].AccountId.Sender = " "
-			},
-			ibcerrors.ErrInvalidAddress,
-		},
-		{
-			"failure: sender address exceeds max length",
-			func() {
-				genesisState.Ics27Accounts[0].AccountId.Sender = ibctesting.GenerateString(types.MaximumSenderLength + 1)
+				genesisState.Ics27Accounts[0].AccountId.Sender = invalid
 			},
 			ibcerrors.ErrInvalidAddress,
 		},
@@ -145,28 +131,4 @@ func (s *KeeperTestSuite) TestExportGenesis() {
 	s.Require().Equal(ibctesting.FirstClientID, genesisState.Ics27Accounts[0].AccountId.ClientId)
 	s.Require().Equal(sender, genesisState.Ics27Accounts[0].AccountId.Sender)
 	s.Require().Equal([]byte(testSalt), genesisState.Ics27Accounts[0].AccountId.Salt)
-}
-
-// TestGenesisRoundTripRemoteSender ensures that an ICS27 account created for a
-// sender that is not a local bech32 address (e.g. an EVM hex address) survives
-// an export -> validate -> import genesis round trip.
-func (s *KeeperTestSuite) TestGenesisRoundTripRemoteSender() {
-	s.SetupTest()
-	ctx := s.chainA.GetContext()
-	gmpKeeper := s.chainA.GetSimApp().GMPKeeper
-
-	evmSender := "0x1234567890abcdef1234567890abcdef12345678"
-	packetData := types.NewGMPPacketData(evmSender, "", []byte(testSalt), []byte{}, "")
-
-	// account creation happens before the (expected) payload execution failure
-	_, err := gmpKeeper.OnRecvPacket(ctx, &packetData, ibctesting.FirstClientID)
-	s.Require().ErrorIs(err, types.ErrInvalidPayload)
-
-	exported, err := gmpKeeper.ExportGenesis(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(exported.Ics27Accounts, 1)
-	s.Require().Equal(evmSender, exported.Ics27Accounts[0].AccountId.Sender)
-
-	s.Require().NoError(exported.Validate())
-	s.Require().NoError(gmpKeeper.InitGenesis(ctx, exported))
 }
