@@ -11,10 +11,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-go/v11/modules/core/04-channel/v2/types"
-	ibcerrors "github.com/cosmos/ibc-go/v11/modules/core/errors"
-	internalerrors "github.com/cosmos/ibc-go/v11/modules/core/internal/errors"
-	"github.com/cosmos/ibc-go/v11/modules/core/internal/v2/telemetry"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/core/04-channel/v2/types"
+	ibcerrors "github.com/lfdt-ibc/ibc-go/v11/modules/core/errors"
+	internalerrors "github.com/lfdt-ibc/ibc-go/v11/modules/core/internal/errors"
+	"github.com/lfdt-ibc/ibc-go/v11/modules/core/internal/v2/telemetry"
 )
 
 var _ types.MsgServer = &Keeper{}
@@ -84,12 +84,6 @@ func (k *Keeper) RecvPacket(goCtx context.Context, msg *types.MsgRecvPacket) (*t
 	ack := types.Acknowledgement{
 		AppAcknowledgements: [][]byte{},
 	}
-
-	// Use a fresh cached context for the application callbacks so that the
-	// TAO state and events written above are not written (and emitted) a
-	// second time, and so that TAO events are not re-emitted as error events
-	// when an application returns a failure.
-	cacheCtx, writeFn = ctx.CacheContext()
 
 	var isAsync bool
 	isSuccess := true
