@@ -1,6 +1,14 @@
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # IBC-Go Documentation
 
 Welcome to the IBC-Go documentation! This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+
+Pages here are licensed under [CC BY 4.0](LICENSE), except the snapshots in
+`versioned_docs/`, which keep the license their text was written under (see
+[CONTRIBUTING.md](../CONTRIBUTING.md#copyright-and-license)). Code here, such as the
+Docusaurus configuration and `src/`, is licensed under [Apache 2.0](../LICENSE).
+Each page outside `versioned_docs/` carries an SPDX header recording its license.
 
 ## Table of Contents
 

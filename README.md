@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # Inter-Blockchain Communication Protocol (IBC)
 
 [![Version](https://img.shields.io/github/tag/lfdt-ibc/ibc-go.svg)](https://github.com/lfdt-ibc/ibc-go/releases/latest)
@@ -120,3 +122,7 @@ If you are interested in working on an issue, please comment on it. We will be h
   applications in Golang
 - [CometBFT](https://github.com/cometbft/cometbft) - High-performance, 10k+ TPS configurable BFT consensus engine.
 - [Cosmos EVM](https://github.com/cosmos/evm) - Native EVM layer for Cosmos SDK chains. 
+
+## License
+
+Code is licensed under the Apache License, Version 2.0; see [LICENSE](LICENSE). Documentation is licensed under [CC BY 4.0](docs/LICENSE). The SPDX header on each file records which applies, except in snapshots of the documentation at past releases, which carry none; see [CONTRIBUTING.md](CONTRIBUTING.md#copyright-and-license).

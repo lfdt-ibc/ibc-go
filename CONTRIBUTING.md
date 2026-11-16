@@ -1,10 +1,10 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
 
 # Contributing to IBC
 
 Thank you for your interest in contributing to IBC. IBC is an open standard for trust-minimized interoperability between independent ledgers, stewarded under the Linux Foundation Decentralized Trust (LFDT). Contributions come in many forms, and all of them follow the same public path.
 
-Before participating, please read the LFDT Code of Conduct. If you use AI or LLM tooling in your contributions, see the AI sign-off rule under Developer Certificate of Origin below.
+Before participating, please read the [Code of Conduct](CODE_OF_CONDUCT.md), which adopts the LF Decentralized Trust Code of Conduct. If you use AI or LLM tooling in your contributions, see the AI sign-off rule under Developer Certificate of Origin below.
 
 ## Ways to contribute
 
@@ -89,7 +89,9 @@ All changes are code reviewed. For non-trivial changes, the reviewer should be a
 
 ## Copyright and license
 
-Code is contributed under Apache 2.0, specifications under the Community Specification License 1.0, and documentation under CC BY 4.0, regardless of where in the repository the file lives. The SPDX header on each file records which applies.
+Code is contributed under [Apache 2.0](LICENSE), specifications under the [Community Specification License 1.0](https://github.com/lfdt-ibc/ibc/blob/main/spec/01-community-specification-license-v1.md) (the IBC specifications are developed in [lfdt-ibc/ibc](https://github.com/lfdt-ibc/ibc/tree/main/spec)), and documentation under [CC BY 4.0](docs/LICENSE), regardless of where in the repository the file lives. The SPDX header on each file records which applies, except in snapshots of the documentation at past releases, which carry none.
+
+Documentation contributed before [`docs/LICENSE`](docs/LICENSE) was added was contributed under the license this repository had at the time: the MIT License until 8 January 2026 ([#8750](https://github.com/lfdt-ibc/ibc-go/pull/8750)), and [Apache 2.0](LICENSE) from then on. Copies received under those terms remain available under them.
 
 ## Trivial contributions
 
