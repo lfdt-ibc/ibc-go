@@ -52,8 +52,11 @@ Ref: https://keepachangelog.com/en/1.0.0/
 * [\#9011](https://github.com/cosmos/ibc-go/pull/9011) Bump **github.com/cosmos/cosmos-sdk** to **0.55.0**
 * [\#9011](https://github.com/cosmos/ibc-go/pull/9011) Bump **github.com/cometbft/cometbft** to **0.40.0**
 * [\#9011](https://github.com/cosmos/ibc-go/pull/9011) Bump **Go** to **1.26**
+* (light-clients/08-wasm) [\#9175](https://github.com/lfdt-ibc/ibc-go/pull/9175) Replace the GPL-3.0 **github.com/OffchainLabs/prysm/v6** with the Apache-2.0 **github.com/supranational/blst@v0.3.17** in `blsverifier`.
 
 ### API Breaking
+
+* (light-clients/08-wasm) [\#9175](https://github.com/lfdt-ibc/ibc-go/pull/9175) Unexport `blsverifier.AggregatePublicKeys`, which returned a prysm `bls.PublicKey`. Use the `Aggregate` query of `blsverifier.CustomQuerier` instead.
 
 ### State Machine Breaking
 
