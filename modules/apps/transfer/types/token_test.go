@@ -4,6 +4,7 @@ package types_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -153,6 +154,33 @@ func TestValidate(t *testing.T) {
 			} else {
 				require.ErrorContains(t, err, tc.expError.Error(), tc.name)
 			}
+		})
+	}
+}
+
+func TestValidateErrorMessageContainsAmount(t *testing.T) {
+	testCases := []struct {
+		name   string
+		amount string
+	}{
+		{"failure: amount is zero", "0"},
+		{"failure: amount is negative", "-1"},
+		{"failure: amount is a large negative number", "-1000000000000000000000"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			token := types.Token{
+				Denom:  types.Denom{Base: "uatom"},
+				Amount: tc.amount,
+			}
+
+			err := token.Validate()
+			require.Error(t, err)
+			require.ErrorIs(t, err, types.ErrInvalidAmount)
+			require.ErrorContains(t, err, fmt.Sprintf("amount must be strictly positive: got %s", tc.amount))
+			// the amount must be rendered as a number and not as the internal math.Int struct
+			require.NotContains(t, err.Error(), "{")
 		})
 	}
 }
